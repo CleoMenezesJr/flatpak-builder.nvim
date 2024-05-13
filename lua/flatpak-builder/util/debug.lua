@@ -7,13 +7,13 @@ local D = {}
 ---@param ... any: the arguments of the formatted string.
 ---@private
 function D.log(scope, str, ...)
-    if _G.YourPluginName.config ~= nil and not _G.YourPluginName.config.debug then
+    if _G.FlatpakBuilder.config ~= nil and not _G.FlatpakBuilder.config.debug then
         return
     end
 
     print(
         string.format(
-            "[your-plugin-name@%s in '%s'] > %s",
+            "[flatpak-builder@%s in '%s'] > %s",
             os.date("%X"),
             scope,
             string.format(str, ...)
@@ -39,7 +39,7 @@ function D.warnDeprecation(options)
             usesDeprecatedOption = true
             print(
                 string.format(
-                    "[your-plugin-name.nvim] `%s` %s",
+                    "[flatpak-builder.nvim] `%s` %s",
                     name,
                     string.format(notice, warning)
                 )
@@ -48,8 +48,8 @@ function D.warnDeprecation(options)
     end
 
     if usesDeprecatedOption then
-        print("[your-plugin-name.nvim]     sorry to bother you with the breaking changes :(")
-        print("[your-plugin-name.nvim]     use `:h YourPluginName.options` to read more.")
+        print("[flatpak-builder.nvim]     sorry to bother you with the breaking changes :(")
+        print("[flatpak-builder.nvim]     use `:h FlatpakBuilder.options` to read more.")
     end
 end
 

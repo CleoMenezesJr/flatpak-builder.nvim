@@ -1,4 +1,4 @@
-local D = require("your-plugin-name.util.debug")
+local D = require("flatpak-builder.util.debug")
 
 local State = { enabled = false }
 
@@ -9,23 +9,23 @@ function State:init()
     self.enabled = false
 end
 
----Saves the state in the global _G.YourPluginName.state object.
+---Saves the state in the global _G.FlatpakBuilder.state object.
 ---
 ---@private
 function State:save()
-    D.log("state.save", "saving state globally to _G.YourPluginName.state")
+    D.log("state.save", "saving state globally to _G.FlatpakBuilder.state")
 
-    _G.YourPluginName.state = self
+    _G.FlatpakBuilder.state = self
 end
 
----Whether the YourPluginName is enabled or not.
+---Whether the FlatpakBuilder is enabled or not.
 ---
 ---@private
 function State:setEnabled()
     self.enabled = true
 end
 
----Whether the YourPluginName is enabled or not.
+---Whether the FlatpakBuilder is enabled or not.
 ---
 ---@return boolean: the `enabled` state value.
 ---@private
