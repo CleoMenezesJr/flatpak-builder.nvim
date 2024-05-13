@@ -65,6 +65,8 @@ local function build_and_run()
     run()
 end
 
+list_files_with_extensions()
+
 return {
     build = build,
     run = run,
