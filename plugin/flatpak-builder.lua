@@ -14,19 +14,20 @@
 --     end, {})
 -- end
 -- print("hello world")
+M = {}
 ManifestoData = {}
 FlatpakSpawn = os.execute("which flatpak-spawn")
 
-local function list_files_with_extensions()
+function M.list_files_with_extensions()
     local manifesto_candidates = {}
     for file in io.popen([[ls | grep -E '.(json|ymal|yml)$']]):lines() do
         table.insert(manifesto_candidates, file)
     end
 
-    GetFileWithReversedDomain(manifesto_candidates)
+    M.get_file_with_reversed_domain(manifesto_candidates)
 end
 
-function GetFileWithReversedDomain(candidates)
+function M.get_file_with_reversed_domain(candidates)
     for _, file in ipairs(candidates) do
         local last_dot_index = file:match(".*()%.")
         local file_without_extension = file:sub(1, last_dot_index - 1)
@@ -38,9 +39,11 @@ function GetFileWithReversedDomain(candidates)
             ManifestoData = { filename = file_without_extension, manifesto = file }
         end
     end
+    print(ManifestoData.filename)
+    print(ManifestoData.manifesto)
 end
 
-local function build()
+function M.build()
     local command = "flatpak run org.flatpak.Builder build "
         .. ManifestoData.filename
         .. " --user --install --force-clean"
@@ -51,7 +54,7 @@ local function build()
     os.execute(command)
 end
 
-local function run()
+function M.run()
     local command = "flatpak run " .. ManifestoData.manifesto
     if FlatpakSpawn == 0 then
         command = "flatpak-spawn --host " .. command
@@ -60,15 +63,9 @@ local function run()
     os.execute(command)
 end
 
-local function build_and_run()
-    build()
-    run()
+function M.build_and_run()
+    M.build()
+    M.run()
 end
 
-list_files_with_extensions()
-
-return {
-    build = build,
-    run = run,
-    build_and_run = build_and_run,
-}
+return M
