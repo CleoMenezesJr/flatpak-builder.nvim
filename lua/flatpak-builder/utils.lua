@@ -1,6 +1,6 @@
 local M = {}
 
-local config = require('flatpak-builder.config')
+local config = require("flatpak-builder.config")
 
 -- Get current working directory
 function M.get_cwd()
@@ -8,29 +8,52 @@ function M.get_cwd()
 end
 
 -- Find manifest files in current directory
-function M.find_manifest_files()
-  local cwd = M.get_cwd()
-  local manifests = {}
+function M.find_manifest_files()local cwd = M.get_cwd()
+local manifests = {}
 
-  -- Common manifest patterns
+-- Get manifest candidates with specific extensions
+local manifesto_candidates = {}
+for file in io.popen("cd " .. cwd .. " && ls | grep -E '\\.(json|yaml|yml)$'"):lines() do
+  table.insert(manifesto_candidates, cwd .. "/" .. file)
+end
+
+-- Check for files with reversed domain name pattern
+for _, file in ipairs(manifesto_candidates) do
+  local basename = vim.fn.fnamemodify(file, ":t")
+  local last_dot_index = basename:match(".*()%.")
+  if last_dot_index then
+    local file_without_extension = basename:sub(1, last_dot_index - 1)
+
+    local is_reversed_domain_name =
+      string.match(file_without_extension, "^([a-zA-Z0-9-]+)%.([a-zA-Z0-9-]+)%.([a-zA-Z]+)$")
+
+    if is_reversed_domain_name then
+      table.insert(manifests, file)
+    end
+  end
+end
+
+-- Fallback to old logic if no reversed domain files found
+if #manifests == 0 then
   local patterns = {
-    '*.json',
-    '*.yaml',
-    '*.yml'
+    "*.json",
+    "*.yaml",
+    "*.yml",
   }
 
   for _, pattern in ipairs(patterns) do
-    local files = vim.fn.glob(cwd .. '/' .. pattern, false, true)
+    local files = vim.fn.glob(cwd .. "/" .. pattern, false, true)
     for _, file in ipairs(files) do
-      local basename = vim.fn.fnamemodify(file, ':t')
+      local basename = vim.fn.fnamemodify(file, ":t")
       -- Check if it looks like a flatpak manifest
-      if basename:match('manifest') or basename:match('flatpak') or basename:match('app') then
+      if basename:match("manifest") or basename:match("flatpak") or basename:match("app") then
         table.insert(manifests, file)
       end
     end
   end
+end
 
-  return manifests
+return manifests
 end
 
 -- Get current manifest file
@@ -62,14 +85,14 @@ function M.get_app_id()
   end
 
   local content = vim.fn.readfile(manifest)
-  local text = table.concat(content, '\n')
+  local text = table.concat(content, "\n")
 
   -- Try to parse as JSON first
   local ok, data = pcall(vim.fn.json_decode, text)
   if ok and data.id then
     return data.id
-  elseif ok and data['app-id'] then
-    return data['app-id']
+  elseif ok and data["app-id"] then
+    return data["app-id"]
   end
 
   -- Fallback: try to find id in text
@@ -80,7 +103,7 @@ end
 -- Show notification
 function M.notify(msg, level)
   if config.options.notify then
-    vim.notify(msg, level or vim.log.levels.INFO, { title = 'Flatpak Builder' })
+    vim.notify(msg, level or vim.log.levels.INFO, { title = "Flatpak Builder" })
   end
 end
 
@@ -89,12 +112,12 @@ function M.execute_command(cmd, opts)
   opts = opts or {}
 
   local term_cmd
-  if config.options.terminal.position == 'horizontal' then
-    term_cmd = config.options.terminal.size .. 'split | terminal ' .. cmd
-  elseif config.options.terminal.position == 'vertical' then
-    term_cmd = 'vsplit | terminal ' .. cmd
+  if config.options.terminal.position == "horizontal" then
+    term_cmd = config.options.terminal.size .. "split | terminal " .. cmd
+  elseif config.options.terminal.position == "vertical" then
+    term_cmd = "vsplit | terminal " .. cmd
   else
-    term_cmd = 'terminal ' .. cmd
+    term_cmd = "terminal " .. cmd
   end
 
   vim.cmd(term_cmd)
@@ -106,7 +129,7 @@ end
 
 -- Check if a command exists
 function M.command_exists(cmd)
-  local result = vim.fn.system('which ' .. cmd .. ' 2>/dev/null')
+  local result = vim.fn.system("which " .. cmd .. " 2>/dev/null")
   return vim.v.shell_error == 0
 end
 
@@ -118,13 +141,13 @@ function M.get_flatpak_builder_cmd()
   end
 
   -- Try to find flatpak-builder
-  if M.command_exists('flatpak-builder') then
-    return 'flatpak-builder'
+  if M.command_exists("flatpak-builder") then
+    return "flatpak-builder"
   end
 
   -- Fallback to flatpak run org.flatpak.Builder
-  if M.command_exists('flatpak') then
-    return 'flatpak run org.flatpak.Builder'
+  if M.command_exists("flatpak") then
+    return "flatpak run org.flatpak.Builder"
   end
 
   return nil
@@ -138,8 +161,8 @@ function M.get_flatpak_cmd()
   end
 
   -- Try to find flatpak
-  if M.command_exists('flatpak') then
-    return 'flatpak'
+  if M.command_exists("flatpak") then
+    return "flatpak"
   end
 
   return nil
@@ -148,7 +171,7 @@ end
 -- Apply executor prefix if configured
 function M.apply_executor_prefix(cmd)
   if config.options.executors.executor_prefix then
-    return config.options.executors.executor_prefix .. ' ' .. cmd
+    return config.options.executors.executor_prefix .. " " .. cmd
   end
   return cmd
 end
