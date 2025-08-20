@@ -8,60 +8,18 @@ function M.get_cwd()
 end
 
 -- Find manifest files in current directory
-function M.find_manifest_files()local cwd = M.get_cwd()
-local manifests = {}
+function M.find_manifest_files()
+  local manifests_candidates = {}
 
--- Get manifest candidates with specific extensions
-local manifesto_candidates = {}
-for file in io.popen("cd " .. cwd .. " && ls | grep -E '\\.(json|yaml|yml)$'"):lines() do
-  table.insert(manifesto_candidates, cwd .. "/" .. file)
-end
-
--- Check for files with reversed domain name pattern
-for _, file in ipairs(manifesto_candidates) do
-  local basename = vim.fn.fnamemodify(file, ":t")
-  local last_dot_index = basename:match(".*()%.")
-  if last_dot_index then
-    local file_without_extension = basename:sub(1, last_dot_index - 1)
-
-    local is_reversed_domain_name =
-      string.match(file_without_extension, "^([a-zA-Z0-9-]+)%.([a-zA-Z0-9-]+)%.([a-zA-Z]+)$")
-
-    if is_reversed_domain_name then
-      table.insert(manifests, file)
-    end
+  for file in io.popen([[ls | grep -E '.(json|ymal|yml)$']]):lines() do
+    table.insert(manifests_candidates, file)
   end
-end
 
--- Fallback to old logic if no reversed domain files found
-if #manifests == 0 then
-  local patterns = {
-    "*.json",
-    "*.yaml",
-    "*.yml",
-  }
-
-  for _, pattern in ipairs(patterns) do
-    local files = vim.fn.glob(cwd .. "/" .. pattern, false, true)
-    for _, file in ipairs(files) do
-      local basename = vim.fn.fnamemodify(file, ":t")
-      -- Check if it looks like a flatpak manifest
-      if basename:match("manifest") or basename:match("flatpak") or basename:match("app") then
-        table.insert(manifests, file)
-      end
-    end
-  end
-end
-
-return manifests
+  return manifests_candidates
 end
 
 -- Get current manifest file
 function M.get_manifest_file()
-  if config.options.manifest_file and vim.fn.filereadable(config.options.manifest_file) == 1 then
-    return config.options.manifest_file
-  end
-
   if config.options.auto_detect then
     local manifests = M.find_manifest_files()
     if #manifests > 0 then
@@ -73,9 +31,9 @@ function M.get_manifest_file()
 end
 
 -- Set manifest file
-function M.set_manifest_file(file)
-  config.options.manifest_file = file
-end
+-- function M.set_manifest_file(file)
+--   config.options.manifest_file = file
+-- end
 
 -- Get application ID from manifest
 function M.get_app_id()
