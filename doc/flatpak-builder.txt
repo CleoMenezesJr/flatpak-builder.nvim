@@ -1,0 +1,114 @@
+*flatpak-builder.txt*    Flatpak Builder for Neovim
+
+Author: Your Name
+License: MIT
+
+CONTENTS                                            *flatpak-builder-contents*
+
+1. Introduction ............................ |flatpak-builder-introduction|
+2. Installation ............................ |flatpak-builder-installation|
+3. Configuration ........................... |flatpak-builder-configuration|
+4. Commands ................................ |flatpak-builder-commands|
+5. Functions ............................... |flatpak-builder-functions|
+
+==============================================================================
+1. INTRODUCTION                                 *flatpak-builder-introduction*
+
+flatpak-builder.nvim is a plugin that provides integration with flatpak-builder
+for building and managing Flatpak applications directly from Neovim.
+
+==============================================================================
+2. INSTALLATION                                 *flatpak-builder-installation*
+
+Install the plugin using your preferred package manager and call the setup
+function:
+
+    require("flatpak-builder").setup()
+
+==============================================================================
+3. CONFIGURATION                               *flatpak-builder-configuration*
+
+The plugin can be configured by passing options to the setup function:
+
+    require("flatpak-builder").setup({
+        build_dir = "build",
+        repo_dir = "repo",
+        manifest_file = nil,
+        auto_detect = true,
+        builder_options = {
+            "--force-clean",
+            "--sandbox",
+            "--user",
+            "--install",
+            "--ccache",
+        },
+        terminal = {
+            position = "horizontal",
+            size = 15,
+        },
+        notify = true,
+        executors = {
+            flatpak_builder = nil,
+            flatpak = nil,
+            executor_prefix = nil,
+        },
+    })
+
+EXECUTORS                                      *flatpak-builder-executors*
+
+The executors option allows you to customize which commands are used:
+
+flatpak_builder ~
+    Custom flatpak-builder command. If nil, auto-detects between
+    "flatpak-builder" and "flatpak run org.flatpak.Builder".
+
+flatpak ~
+    Custom flatpak command. If nil, auto-detects "flatpak".
+
+executor_prefix ~
+    Prefix added to all commands. Useful for running inside containers
+    or sandboxes. Examples:
+    - "flatpak-spawn --host" (inside Flatpak sandbox)
+    - "toolbox run" (inside Toolbox container)
+    - "distrobox-enter mybox --" (inside Distrobox)
+
+EXECUTOR EXAMPLES                              *flatpak-builder-executor-examples*
+
+Inside Flatpak development environment: >
+    executors = {
+        executor_prefix = "flatpak-spawn --host",
+    }
+
+Using org.flatpak.Builder: >
+    executors = {
+        flatpak_builder = "flatpak run org.flatpak.Builder",
+    }
+==============================================================================
+4. COMMANDS                                         *flatpak-builder-commands*
+
+:FlatpakBuildAndRun                                    *:FlatpakBuildAndRun*
+    Build and run the Flatpak application.
+
+:FlatpakBuild                                              *:FlatpakBuild*
+    Build the Flatpak application.
+
+:FlatpakRun                                                  *:FlatpakRun*
+    Run the Flatpak application.
+
+:FlatpakStop                                                *:FlatpakStop*
+    Stop the running Flatpak application.
+
+:FlatpakClean                                              *:FlatpakClean*
+    Clean build directories.
+
+:FlatpakUpdateDependencies                      *:FlatpakUpdateDependencies*
+    Update Flatpak dependencies.
+
+:FlatpakExportBundle                                  *:FlatpakExportBundle*
+    Export the application as a bundle.
+
+:FlatpakSelectManifest                              *:FlatpakSelectManifest*
+    Select a manifest file.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
