@@ -87,7 +87,7 @@ end
 
 -- Check if a command exists
 function M.command_exists(cmd)
-  local result = vim.fn.system("which " .. cmd .. " 2>/dev/null")
+  os.execute("command -v " .. cmd .. " > /dev/null 2>&1")
   return vim.v.shell_error == 0
 end
 
